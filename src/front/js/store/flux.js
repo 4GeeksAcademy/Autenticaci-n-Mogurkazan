@@ -2,6 +2,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
 			message: null,
+			auth: false,
+			email: null,
+			token: null,
 			demo: [
 				{
 					title: "FIRST",
@@ -20,7 +23,72 @@ const getState = ({ getStore, getActions, setStore }) => {
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
-
+			signUp: async (email, password) => {
+				try {
+					const requestOptions = {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ email, password })
+					};
+					const response = await fetch(process.env.BACKEND_URL + '/api/signup', requestOptions);
+					if (!response.ok) {
+						const errorData = await response.json();
+						throw new Error(errorData.message || 'An error occurred');
+					}
+					const data = await response.json();
+					setStore({ auth: true, email: email, token: data.access_token });
+					localStorage.setItem('token', data.access_token);
+					return data;
+				} catch (error) {
+					console.error('Error signing up:', error);
+					throw error;
+				}
+			},
+			login: async (email, password) => {
+                try {
+                    const requestOptions = {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    };
+                    const response = await fetch(process.env.BACKEND_URL + '/api/login', requestOptions);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'An error occurred');
+                    }
+                    const data = await response.json();
+                    setStore({ auth: true, email: email, token: data.access_token });
+                    localStorage.setItem('token', data.access_token);
+                    return data;
+                } catch (error) {
+                    console.error('Error logging in:', error);
+                    throw error;
+                }
+            },
+			logout: async () => {
+                try {
+                    const requestOptions = {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    };
+                    const token = getStore().token;
+                    if (token) {
+                        requestOptions.headers['Authorization'] = 'Bearer ' + token;
+                    }
+                    const response = await fetch(process.env.BACKEND_URL + '/api/logout', requestOptions);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'An error occurred');
+                    }
+                    setStore({ auth: false, email: null, token: null });
+                    localStorage.removeItem('token');
+                    return true;
+                } catch (error) {
+                    console.error('Error logging out:', error);
+                    throw error;
+                }
+            },
 			getMessage: async () => {
 				try{
 					// fetching data from the backend
