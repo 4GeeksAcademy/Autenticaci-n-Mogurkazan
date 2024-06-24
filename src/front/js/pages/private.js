@@ -9,7 +9,7 @@ export const Private = () => {
     const handleLogout = async () => {
         try {
             await actions.logout();
-            navigate("/login"); // Redirigir al login después de hacer logout
+            navigate("/login"); 
         } catch (error) {
             console.error("Error logging out:", error);
         }
@@ -19,6 +19,9 @@ export const Private = () => {
         <div className="container">
             <h1>ESTÁS EN TU ÁREA PRIVADA</h1>
             <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+            <Link to="/">
+                <button className="btn btn-primary mt-3">Back home</button>
+            </Link>
         </div>
     );
 };
